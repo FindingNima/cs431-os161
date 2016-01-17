@@ -54,8 +54,6 @@
 
 #define MAXMENUARGS  16
 
-//Define Global Debug Variable
-//uint32_t dbflags = 0;
 
 // XXX this should not be in this file
 void
@@ -193,8 +191,8 @@ static int set_debug(int nargs, char **args)
 		return EINVAL;
 	}
 	char* name = args[0];
-	dbflags = 1;
-	kprintf("%s:Debug Mode Set\n",name);
+	dbflags = 0x1111;
+	kprintf("Debug Mode Set with: %s\n",name);
 	return 0;	
 }
 /*
