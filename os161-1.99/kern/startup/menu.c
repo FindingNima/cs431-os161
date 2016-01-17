@@ -54,6 +54,9 @@
 
 #define MAXMENUARGS  16
 
+//Define Global Debug Variable
+//uint32_t dbflags = 0;
+
 // XXX this should not be in this file
 void
 getinterval(time_t s1, uint32_t ns1, time_t s2, uint32_t ns2,
@@ -180,6 +183,20 @@ cmd_prog(int nargs, char **args)
 	return common_prog(nargs, args);
 }
 
+/*
+* Command for setting debug
+*/
+static int set_debug(int nargs, char **args)
+{
+	if (nargs < 1) {
+		kprintf("Usage: dth");
+		return EINVAL;
+	}
+	char* name = args[0];
+	dbflags = 1;
+	kprintf("%s:Debug Mode Set\n",name);
+	return 0;	
+}
 /*
  * Command for starting the system shell.
  */
@@ -533,7 +550,10 @@ static struct {
 	{ "help",	cmd_mainmenu },
 	{ "?o",		cmd_opsmenu },
 	{ "?t",		cmd_testmenu },
-
+	
+	/* Debug */
+	{"dth",		set_debug },
+	
 	/* operations */
 	{ "s",		cmd_shell },
 	{ "p",		cmd_prog },
