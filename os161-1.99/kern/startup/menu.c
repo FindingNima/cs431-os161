@@ -191,7 +191,7 @@ static int set_debug(int nargs, char **args)
 		return EINVAL;
 	}
 	char* name = args[0];
-	dbflags = 0x1111;
+	dbflags = 0xFFFF;
 	kprintf("Debug Mode Set with: %s\n",name);
 	return 0;	
 }
