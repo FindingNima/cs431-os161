@@ -290,6 +290,23 @@ cmd_quit(int nargs, char **args)
 }
 
 /*
+* Command for turning on debug mode
+*/
+static
+int
+cmd_dth(int nargs, char **args)
+{
+	(void)nargs;
+	(void)args;
+	
+	if (dbflags == 0)
+		dbflags = 0xFFFF;
+	else
+		dbflags = 0;
+
+	return 0;
+}
+/*
  * Command for mounting a filesystem.
  */
 
@@ -437,6 +454,7 @@ static const char *opsmenu[] = {
 	"[sync]    Sync filesystems          ",
 	"[panic]   Intentional panic         ",
 	"[q]       Quit and shut down        ",
+	"[dth]	   Turn on debug mode	     ",
 	NULL
 };
 
@@ -548,6 +566,9 @@ static struct {
 	{ "q",		cmd_quit },
 	{ "exit",	cmd_quit },
 	{ "halt",	cmd_quit },
+
+	/* emily's debug operations */
+	{ "dth",	cmd_dth },
 
 #if OPT_SYNCHPROBS
 	/* in-kernel synchronization problem(s) */
