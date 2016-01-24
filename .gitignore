@@ -30,3 +30,7 @@
 
 # Debug files
 *.dSYM/
+
+# OS specific
+defs.mk
+*.depend
