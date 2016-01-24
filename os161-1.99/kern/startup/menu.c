@@ -300,8 +300,15 @@ cmd_dth(int nargs, char **args)
 	(void)args;
 
 	extern uint32_t  dbflags;
-	dbflags = 0x0010;
-	kprintf("dbflags variable: %d\n", dbflags);
+	if (dbflags & 0x0010)
+	{
+		return 0;
+	}
+	else
+	{
+		dbflags = 0x0010;
+		kprintf("DB_THREADS debugging messages enabled\n");
+	}
 
 	return 0;
 }
