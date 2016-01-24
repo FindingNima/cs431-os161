@@ -186,13 +186,10 @@ cmd_prog(int nargs, char **args)
 */
 static int set_debug(int nargs, char **args)
 {
-	if (nargs < 1) {
-		kprintf("Usage: dth");
-		return EINVAL;
-	}
-	char* name = args[0];
+	(void) nargs;
+	(void) args;
 	dbflags = 0xFFFF;
-	kprintf("Debug Mode Set with: %s\n",name);
+	kprintf("Debug Mode Set\n");
 	return 0;	
 }
 /*
