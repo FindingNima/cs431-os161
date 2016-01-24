@@ -290,6 +290,23 @@ cmd_quit(int nargs, char **args)
 }
 
 /*
+ * Command for displaying DB_THREAD debug messages
+ */
+static
+int
+cmd_dth(int nargs, char **args)
+{
+	(void)nargs;
+	(void)args;
+
+	extern uint32_t  dbflags;
+	dbflags = 0x0010;
+	kprintf("dbflags variable: %d\n", dbflags);
+
+	return 0;
+}
+
+/*
  * Command for mounting a filesystem.
  */
 
@@ -437,6 +454,7 @@ static const char *opsmenu[] = {
 	"[sync]    Sync filesystems          ",
 	"[panic]   Intentional panic         ",
 	"[q]       Quit and shut down        ",
+	"[dth]     Enable DB_THREADS debugging messages",
 	NULL
 };
 
@@ -546,6 +564,7 @@ static struct {
 	{ "sync",	cmd_sync },
 	{ "panic",	cmd_panic },
 	{ "q",		cmd_quit },
+	{ "dth",	cmd_dth},
 	{ "exit",	cmd_quit },
 	{ "halt",	cmd_quit },
 
