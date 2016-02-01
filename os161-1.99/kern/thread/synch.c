@@ -39,6 +39,7 @@
 #include <thread.h>
 #include <current.h>
 #include <synch.h>
+#include <opt-A1.h>
 
 ////////////////////////////////////////////////////////////
 //
@@ -162,7 +163,10 @@ lock_create(const char *name)
                 kfree(lock);
                 return NULL;
         }
-        
+	#if OPT_A1
+	lock->mutex = 1;
+
+	#endif
         // add stuff here as needed
         
         return lock;
@@ -174,7 +178,10 @@ lock_destroy(struct lock *lock)
         KASSERT(lock != NULL);
 
         // add stuff here as needed
-        
+	#if OPT_A1
+	kfree(lock->mutex);
+	#endif
+
         kfree(lock->lk_name);
         kfree(lock);
 }
@@ -183,9 +190,25 @@ void
 lock_acquire(struct lock *lock)
 {
         // Write this
+	#if OPT_A1
 
+        KASSERT(curthread->t_in_interrupt == false);
+	spinlock_acquire(&lock->mut_lock);
+	while (lock->mutex == 0) {
+		wchan_lock(lock->mut_wchan);
+		spinlock_release(&lock->mut_lock);
+        	wchan_sleep(lock->mut_wchan);
+		spinlock_acquire(&lock->mut_lock);
+	}
+
+        KASSERT(lock->mutex == 1);
+	lock->mutex = 0;
+	spinlock_release(&lock->mut_lock);
+	#else
         (void)lock;  // suppress warning until code gets written
+	#endif
 }
+
 
 void
 lock_release(struct lock *lock)
