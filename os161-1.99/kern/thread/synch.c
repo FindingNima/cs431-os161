@@ -165,7 +165,8 @@ lock_create(const char *name)
         }
 	#if OPT_A1
 	lock->mutex = 1;
-
+	spinlock_init(&lock->mut_lock);
+	lock->mut_wchan = wchan_create(lock->lk_name);
 	#endif
         // add stuff here as needed
         
@@ -179,7 +180,8 @@ lock_destroy(struct lock *lock)
 
         // add stuff here as needed
 	#if OPT_A1
-	kfree(lock->mutex);
+	spinlock_cleanup(&lock->mut_lock);
+	wchan_destroy(lock->mut_wchan);
 	#endif
 
         kfree(lock->lk_name);
@@ -214,18 +216,33 @@ void
 lock_release(struct lock *lock)
 {
         // Write this
+	#if OPT_A1
 
+	spinlock_acquire(&lock->mut_lock);
+
+        lock->mutex = 1;
+        KASSERT(lock->mutex==1);
+	wchan_wakeone(lock->mut_wchan);
+
+	spinlock_release(&lock->mut_lock);
+	#else
         (void)lock;  // suppress warning until code gets written
+	#endif
 }
 
 bool
 lock_do_i_hold(struct lock *lock)
 {
         // Write this
-
+	#if OPT_A1
+	if (lock->mutex == 0)
+		return true;
+	else
+		return false;
+	#else
         (void)lock;  // suppress warning until code gets written
-
         return true; // dummy until code gets written
+	#endif
 }
 
 ////////////////////////////////////////////////////////////
