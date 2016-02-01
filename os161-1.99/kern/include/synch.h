@@ -29,13 +29,14 @@
 
 #ifndef _SYNCH_H_
 #define _SYNCH_H_
+#define MAX_LOCKS 100
 
 /*
  * Header file for synchronization primitives.
  */
 
-
 #include <spinlock.h>
+#include <threadlist.h>
 #include <opt-A1.h>
 
 /*
@@ -120,6 +121,13 @@ void lock_destroy(struct lock *);
 
 struct cv {
         char *cv_name;
+	#if OPT_A1
+	volatile int mutex;
+	volatile int index;
+	struct spinlock mut_lock;
+	struct wchan chanList[MAX_LOCKS];
+	char* names[MAX_LOCKS];
+	#endif
         // add what you need here
         // (don't forget to mark things volatile as needed)
 };

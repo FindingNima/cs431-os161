@@ -244,7 +244,42 @@ lock_do_i_hold(struct lock *lock)
         return true; // dummy until code gets written
 	#endif
 }
-
+//////////
+//
+// My Functions
+bool inList (struct cv *cv, struct lock *lock) {
+	#if OPT_A1
+	int i;
+	for (i=0;i<MAX_LOCKS;i++) {
+		if (cv->names[i] == lock->lk_name)
+			return true;
+	}
+	return false;
+	#else
+	return true;
+	#endif
+}
+void addName (struct cv *cv, struct lock *lock) {
+	#if OPT_A1
+	if (cv->index == MAX_LOCKS)
+		return;
+	cv->names[cv->index] = lock->lk_name;
+	cv->chanList[cv->index] = wchan_create(names[i]);
+	cv->index++;
+	#endif
+}
+int getIndex (struct cv *cv, struct lock *lock) {
+	#if OPT_A1
+	int i;
+	for (i=0; i<MAX_LOCKS;i++) {
+		if (cv->names[i] == lock->lk_name)
+			return i;
+	}
+	return -1;
+	#else
+	return -1;
+	#endif
+}
 ////////////////////////////////////////////////////////////
 //
 // CV
@@ -254,6 +289,7 @@ struct cv *
 cv_create(const char *name)
 {
         struct cv *cv;
+	int i;
 
         cv = kmalloc(sizeof(struct cv));
         if (cv == NULL) {
@@ -266,6 +302,14 @@ cv_create(const char *name)
                 return NULL;
         }
         
+	#if OPT_A1
+	cv->mutex = 1;
+	cv->index = 0;
+	spinlock_init(&cv->mut_lock);
+	for (i = 0; i < MAX_LOCKS; i++) {
+		cv->chanList[i] = wchan_create(NULL);
+		cv->names[i] = NULL;
+	#endif
         // add stuff here as needed
         
         return cv;
@@ -278,6 +322,15 @@ cv_destroy(struct cv *cv)
 
         // add stuff here as needed
         
+	#if OPT_A1
+	int i;
+	spinlock_cleanup(&cv->mut_lock);
+	for (i=0;i<MAX_LOCKS;i++) {
+		kfree(cv->names[i]);
+		wchan_destroy(cv->chanList[i]);
+	}
+	kfree(cv->names);
+	#endif
         kfree(cv->cv_name);
         kfree(cv);
 }
@@ -286,22 +339,49 @@ void
 cv_wait(struct cv *cv, struct lock *lock)
 {
         // Write this
+	#if OPT_A1
+	int i;
+	if (!inList(cv,lock))
+		addName(cv,lock);
+	i = getIndex(cv,lock);
+	wchan_lock(cv->chanList[i]);
+	lock_release(&lock);
+	wchan_sleep(cv->chanList[i]);
+	lock_acquire(&lock);
+	#else
         (void)cv;    // suppress warning until code gets written
         (void)lock;  // suppress warning until code gets written
+	#endif
 }
 
 void
 cv_signal(struct cv *cv, struct lock *lock)
 {
         // Write this
+	#if OPT_A1
+	int i;
+	if (!inList(cv,lock))
+		addName(cv,lock);
+	i = getIndex(cv,lock);
+	wchan_wakeone(cv->chanList[i]);	
+	#else
 	(void)cv;    // suppress warning until code gets written
 	(void)lock;  // suppress warning until code gets written
+	#endif
 }
 
 void
 cv_broadcast(struct cv *cv, struct lock *lock)
 {
 	// Write this
+	#if OPT_A1
+	int i;
+	if (!inList(cv,lock))
+		addName(cv,lock);
+	i = getIndex(cv,lock);
+	wchan_wakeall(cv->chanList[i]);
+	#else
 	(void)cv;    // suppress warning until code gets written
 	(void)lock;  // suppress warning until code gets written
+	#endif
 }
