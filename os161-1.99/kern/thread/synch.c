@@ -305,6 +305,7 @@ cv_create(const char *name)
 	#if OPT_A1
 	cv->mutex = 1;
 	cv->index = 0;
+	cv->chanList = malloc(MAX_LOCKS * sizeof(struct wchan));
 	spinlock_init(&cv->mut_lock);
 	for (i = 0; i < MAX_LOCKS; i++) {
 		cv->chanList[i] = wchan_create(NULL);
@@ -341,9 +342,9 @@ cv_wait(struct cv *cv, struct lock *lock)
         // Write this
 	#if OPT_A1
 	int i;
-	if (!inList(cv,lock))
-		addName(cv,lock);
-	i = getIndex(cv,lock);
+	if (!inList(&cv,&lock))
+		addName(&cv,&lock);
+	i = getIndex(&cv,&lock);
 	wchan_lock(cv->chanList[i]);
 	lock_release(&lock);
 	wchan_sleep(cv->chanList[i]);
@@ -360,9 +361,9 @@ cv_signal(struct cv *cv, struct lock *lock)
         // Write this
 	#if OPT_A1
 	int i;
-	if (!inList(cv,lock))
-		addName(cv,lock);
-	i = getIndex(cv,lock);
+	if (!inList(&cv,&lock))
+		addName(&cv,&lock);
+	i = getIndex(&cv,&lock);
 	wchan_wakeone(cv->chanList[i]);	
 	#else
 	(void)cv;    // suppress warning until code gets written
@@ -376,9 +377,9 @@ cv_broadcast(struct cv *cv, struct lock *lock)
 	// Write this
 	#if OPT_A1
 	int i;
-	if (!inList(cv,lock))
-		addName(cv,lock);
-	i = getIndex(cv,lock);
+	if (!inList(&cv,&lock))
+		addName(&cv,&lock);
+	i = getIndex(&cv,&lock);
 	wchan_wakeall(cv->chanList[i]);
 	#else
 	(void)cv;    // suppress warning until code gets written

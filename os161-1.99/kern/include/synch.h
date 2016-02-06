@@ -125,7 +125,7 @@ struct cv {
 	volatile int mutex;
 	volatile int index;
 	struct spinlock mut_lock;
-	struct wchan chanList[MAX_LOCKS];
+	struct wchan *chanList;
 	char* names[MAX_LOCKS];
 	#endif
         // add what you need here
