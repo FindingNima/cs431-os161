@@ -264,7 +264,7 @@ void addName (struct cv *cv, struct lock *lock) {
 	if (cv->index == MAX_LOCKS)
 		return;
 	cv->names[cv->index] = lock->lk_name;
-	cv->chanList[cv->index] = wchan_create(names[i]);
+	cv->chanList[cv->index] = wchan_create(cv->names[cv->index]);
 	cv->index++;
 	#endif
 }
