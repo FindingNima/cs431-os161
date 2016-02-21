@@ -36,6 +36,7 @@
 
 
 #include <spinlock.h>
+#include <opt-A1.h>
 
 /*
  * Dijkstra-style semaphore.
@@ -73,9 +74,16 @@ void V(struct semaphore *);
  * (should be) made internally.
  */
 struct lock {
-        char *lk_name;
-        // add what you need here
-        // (don't forget to mark things volatile as needed)
+	#if OPT_A1
+		char* lk_name;
+		struct wchan *lk_wchan;
+		struct spinlock lk_lock;
+		volatile int lk_value;
+	#else
+        	char *lk_name;
+        	// add what you need here
+        	// (don't forget to mark things volatile as needed)
+	#endif OPT_A1
 };
 
 struct lock *lock_create(const char *name);
