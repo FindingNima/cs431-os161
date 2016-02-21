@@ -39,6 +39,7 @@
 #include <thread.h>
 #include <current.h>
 #include <synch.h>
+#include <opt-A1.h>
 
 ////////////////////////////////////////////////////////////
 //
@@ -150,7 +151,14 @@ V(struct semaphore *sem)
 struct lock *
 lock_create(const char *name)
 {
+        
+        // add stuff here as needed
+	#if OPT_A1
         struct lock *lock;
+        
+	int initial_count;
+
+	KASSERT(initial_count == 0);
 
         lock = kmalloc(sizeof(struct lock));
         if (lock == NULL) {
@@ -162,21 +170,56 @@ lock_create(const char *name)
                 kfree(lock);
                 return NULL;
         }
-        
-        // add stuff here as needed
-        
+	lock->lk_wchan = wchan_create(lock->lk_name);
+	
+	if (lock->lk_wchan == NULL) {
+		kfree(lock->lk_name);
+		kfree(lock);
+		return NULL;
+	}
+
+	spinlock_init(&lock->lk_lock);
+        lock->lk_value = initial_count;
+
         return lock;
+	
+	#else
+//        struct lock *lock;
+//
+//        lock = kmalloc(sizeof(struct lock));
+//        if (lock == NULL) {
+//                return NULL;
+//        }
+//
+//        lock->lk_name = kstrdup(name);
+//        if (lock->lk_name == NULL) {
+//                kfree(lock);
+//                return NULL;
+//        }
+
+	#endif OPT_1
 }
 
 void
 lock_destroy(struct lock *lock)
 {
+	#if OPT_1
         KASSERT(lock != NULL);
 
-        // add stuff here as needed
-        
+	/* wchan_cleanup will assert if anyone's waiting on it */
+	spinlock_cleanup(&lock->lk_lock);
+	wchan_destroy(lock->lk_wchan);
         kfree(lock->lk_name);
         kfree(lock);
+
+	#else
+//        KASSERT(lock != NULL);
+//        
+//        kfree(lock->lk_name);
+//        kfree(lock);
+
+	#endif OPT_1
+
 }
 
 void
