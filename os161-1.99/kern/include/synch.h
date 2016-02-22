@@ -29,7 +29,7 @@
 
 #ifndef _SYNCH_H_
 #define _SYNCH_H_
-#endif
+
 /*
  *  * Header file for synchronization primitives.
  *   */
@@ -84,10 +84,9 @@ struct lock {
 			    struct thread* lk_curthread;
 #else
 			        char *lk_name;
-#endif
 				    // add what you need here
 				    //     // (don't forget to mark things volatile as needed)
-				    //     #endif OPT_A1
+				    //     #endif
 				    //     };
 				    //
 				    //     struct lock *lock_create(const char *name);
