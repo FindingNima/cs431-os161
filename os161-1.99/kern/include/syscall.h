@@ -26,7 +26,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-#include "opt_A2.h"
+#include "opt-A2.h"
 #ifndef _SYSCALL_H_
 #define _SYSCALL_H_
 

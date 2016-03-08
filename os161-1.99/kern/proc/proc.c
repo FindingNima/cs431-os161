@@ -74,12 +74,17 @@ struct semaphore *no_proc_sem;
 #if OPT_A2
 
 int index = 0;
-char* pID[PSIZE];
+struct proc* pids[PSIZE];
 
-int addProc(char* name)
+/*
+ * obviously not caring about overwriting in the table
+ */
+int addProc(struct proc* process)
 {
-pID[index] = name;
-return index++;
+	if (index == PSIZE)
+		index = 0;
+	pids[index] = process;
+	return index++;
 }
 
 #endif
@@ -107,7 +112,7 @@ proc_create(const char *name)
 	spinlock_init(&proc->p_lock);
 
 	// added by jon-bassi
-#ifdef OPT_A2
+#if OPT_A2
 	proc->sem_running = sem_create("sem_running", 1);
 	proc->sem_waiting = sem_create("sem_waiting processes", 0);
 #endif
@@ -122,7 +127,7 @@ proc_create(const char *name)
 	proc->console = NULL;
 #endif // UW
 #if OPT_A2
-	proc->pid = addProc(name);
+	proc->pid = addProc(&proc);
 #endif
 
 	return proc;
@@ -146,7 +151,7 @@ proc_destroy(struct proc *proc)
 	KASSERT(proc != NULL);
 	KASSERT(proc != kproc);
 
-#ifdef OPT_A2
+#if OPT_A2
 	sem_destroy(&proc->sem_running);
 	sem_destroy(&proc->sem_waiting);
 #endif

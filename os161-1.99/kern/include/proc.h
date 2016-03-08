@@ -69,8 +69,8 @@ struct proc {
     // added by jon-bassi
 #if OPT_A2
     int p_exitcode;
-    struct *semaphore sem_running;
-    struct *semaphore sem_waiting;
+    struct semaphore *sem_running;
+    struct semaphore *sem_waiting;
 #endif
 
 
