@@ -51,14 +51,21 @@
  *
  * Calls vfs_open on progname and thus may destroy it.
  */
+#if OPT_A2
+int runprogram(char *progname, char **args) {
+#else
 int
-runprogram(char *progname)
+runprogram(char *progname, char **args)
 {
+#endif
 	struct addrspace *as;
 	struct vnode *v;
 	vaddr_t entrypoint, stackptr;
 	int result;
 
+#if OPT_A2
+	printf("UPDATED");
+#endif
 	/* Open the file. */
 	result = vfs_open(progname, O_RDONLY, 0, &v);
 	if (result) {

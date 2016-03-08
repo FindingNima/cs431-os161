@@ -54,6 +54,7 @@
 
 #define MAXMENUARGS  16
 
+
 // XXX this should not be in this file
 void
 getinterval(time_t s1, uint32_t ns1, time_t s2, uint32_t ns2,
@@ -180,6 +181,17 @@ cmd_prog(int nargs, char **args)
 	return common_prog(nargs, args);
 }
 
+/*
+* Command for setting debug
+*/
+static int set_debug(int nargs, char **args)
+{
+	(void) nargs;
+	(void) args;
+	dbflags = 0xFFFF;
+	kprintf("Debug Mode Set\n");
+	return 0;	
+}
 /*
  * Command for starting the system shell.
  */
@@ -396,19 +408,6 @@ cmd_kheapstats(int nargs, char **args)
 	return 0;
 }
 
-/*
-* Print debug statements.
-*/
-static
-int
-cmd_dth(int nargs, char **args)
-{
-	(void)nargs;
-	(void)args;
-	dbflags = 0xFFFF;
-	return 0;
-}
-
 ////////////////////////////////////////
 //
 // Menus.
@@ -447,7 +446,6 @@ static const char *opsmenu[] = {
 	"[pf]      Print a file              ",
 	"[cd]      Change directory          ",
 	"[pwd]     Print current directory   ",
-	"[dth]     Turn on debug             ",
 	"[sync]    Sync filesystems          ",
 	"[panic]   Intentional panic         ",
 	"[q]       Quit and shut down        ",
@@ -547,7 +545,10 @@ static struct {
 	{ "help",	cmd_mainmenu },
 	{ "?o",		cmd_opsmenu },
 	{ "?t",		cmd_testmenu },
-
+	
+	/* Debug */
+	{"dth",		set_debug },
+	
 	/* operations */
 	{ "s",		cmd_shell },
 	{ "p",		cmd_prog },
@@ -562,7 +563,6 @@ static struct {
 	{ "q",		cmd_quit },
 	{ "exit",	cmd_quit },
 	{ "halt",	cmd_quit },
-	{ "dth",	cmd_dth },
 
 #if OPT_SYNCHPROBS
 	/* in-kernel synchronization problem(s) */

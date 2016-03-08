@@ -17,9 +17,13 @@ void sys__exit(int exitcode) {
 
   struct addrspace *as;
   struct proc *p = curproc;
+#if OPT_A2
+  
+#else
   /* for now, just include this to keep the compiler from complaining about
      an unused variable */
   (void)exitcode;
+#endif
 
   DEBUG(DB_SYSCALL,"Syscall: _exit(%d)\n",exitcode);
 
