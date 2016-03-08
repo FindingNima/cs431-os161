@@ -50,6 +50,7 @@
 #include <vfs.h>
 #include <synch.h>
 #include <kern/fcntl.h>  
+#include "opt-A2.h"
 
 /*
  * The process for the kernel; this holds all the kernel-only threads.
@@ -70,6 +71,18 @@ struct semaphore *no_proc_sem;
 #endif  // UW
 
 
+#if OPT_A2
+
+int index = 0;
+char* pID[PSIZE];
+
+int addProc(char* name)
+{
+pID[index] = name;
+return index++;
+}
+
+#endif
 
 /*
  * Create a proc structure.
@@ -102,6 +115,9 @@ proc_create(const char *name)
 #ifdef UW
 	proc->console = NULL;
 #endif // UW
+#if OPT_A2
+	proc->pid = addProc(name);
+#endif
 
 	return proc;
 }

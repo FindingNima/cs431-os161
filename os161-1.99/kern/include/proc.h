@@ -37,13 +37,17 @@
  */
 
 #include <spinlock.h>
-#include <thread.h> /* required for struct threadarray */
-
+#include <thread.h> /* required for struct threadarray */ 
+#include "opt-A2.h"
 struct addrspace;
 struct vnode;
 #ifdef UW
 struct semaphore;
 #endif // UW
+
+#if OPT_A2
+#define PSIZE 1000
+#endif
 
 /*
  * Process structure.
@@ -53,6 +57,9 @@ struct proc {
 	struct spinlock p_lock;		/* Lock for this structure */
 	struct threadarray p_threads;	/* Threads in this process */
 
+#if OPT_A2
+	int pid;
+#endif
 	/* VM */
 	struct addrspace *p_addrspace;	/* virtual address space */
 
