@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2013
- *	The President and Fellows of Harvard College.
+ *  The President and Fellows of Harvard College.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -37,27 +37,42 @@
  */
 
 #include <spinlock.h>
-#include <thread.h> /* required for struct threadarray */
-
+#include <thread.h> /* required for struct threadarray */ 
+#include "opt-A2.h"
 struct addrspace;
 struct vnode;
 #ifdef UW
 struct semaphore;
 #endif // UW
 
+#if OPT_A2
+#define PSIZE 1000
+#endif
+
 /*
  * Process structure.
  */
 struct proc {
-	char *p_name;			/* Name of this process */
-	struct spinlock p_lock;		/* Lock for this structure */
-	struct threadarray p_threads;	/* Threads in this process */
+    char *p_name;           /* Name of this process */
+    struct spinlock p_lock;     /* Lock for this structure */
+    struct threadarray p_threads;   /* Threads in this process */
 
-	/* VM */
-	struct addrspace *p_addrspace;	/* virtual address space */
+#if OPT_A2
+    int pid;
+#endif
+    /* VM */
+    struct addrspace *p_addrspace;  /* virtual address space */
 
-	/* VFS */
-	struct vnode *p_cwd;		/* current working directory */
+    /* VFS */
+    struct vnode *p_cwd;        /* current working directory */
+
+    // added by jon-bassi
+#if OPT_A2
+    int p_exitcode;
+    struct *semaphore sem_running;
+    struct *semaphore sem_waiting;
+#endif
+
 
 #ifdef UW
   /* a vnode to refer to the console device */
@@ -68,7 +83,7 @@ struct proc {
   struct vnode *console;                /* a vnode for the console device */
 #endif
 
-	/* add more material here as needed */
+    /* add more material here as needed */
 };
 
 /* This is the process structure for the kernel and for kernel-only threads. */
