@@ -39,7 +39,7 @@
 #include <vm.h>
 #include <mainbus.h>
 #include <syscall.h>
-
+#include <opt-A2.h>
 
 /* in exception.S */
 extern void asm_usermode(struct trapframe *tf);
@@ -417,6 +417,10 @@ mips_usermode(struct trapframe *tf)
 void
 enter_new_process(int argc, userptr_t argv, vaddr_t stack, vaddr_t entry)
 {
+//#if OPT_A2
+//	DEBUG(DB_EXEC, "entering process");
+//#endif
+
 	struct trapframe tf;
 
 	bzero(&tf, sizeof(tf));
