@@ -45,6 +45,7 @@
 #include "opt-synchprobs.h"
 #include "opt-sfs.h"
 #include "opt-net.h"
+#include <opt-A2.h>
 
 /*
  * In-kernel menu and command dispatcher.
@@ -102,7 +103,12 @@ cmd_progthread(void *ptr, unsigned long nargs)
 
 	strcpy(progname, args[0]);
 
+#if OPT_A2
+	result = runprogram(progname, args);
+#else
 	result = runprogram(progname);
+#endif
+
 	if (result) {
 		kprintf("Running program %s failed: %s\n", args[0],
 			strerror(result));
@@ -220,6 +226,8 @@ static
 int
 cmd_pwd(int nargs, char **args)
 {
+	
+	DEBUG(DB_EXEC, " THIS SHOULD FREAKING WORK");
 	char buf[PATH_MAX+1];
 	int result;
 	struct iovec iov;
@@ -286,23 +294,6 @@ cmd_quit(int nargs, char **args)
 	vfs_sync();
 	sys_reboot(RB_POWEROFF);
 	thread_exit();
-	return 0;
-}
-
-/*
- * Command for displaying DB_THREAD debug messages
- */
-static
-int
-cmd_dth(int nargs, char **args)
-{
-	(void)nargs;
-	(void)args;
-
-	extern uint32_t  dbflags;
-	dbflags = 0x0010;
-	kprintf("dbflags variable: %d\n", dbflags);
-
 	return 0;
 }
 
@@ -454,7 +445,6 @@ static const char *opsmenu[] = {
 	"[sync]    Sync filesystems          ",
 	"[panic]   Intentional panic         ",
 	"[q]       Quit and shut down        ",
-	"[dth]     Enable DB_THREADS debugging messages",
 	NULL
 };
 
@@ -564,7 +554,6 @@ static struct {
 	{ "sync",	cmd_sync },
 	{ "panic",	cmd_panic },
 	{ "q",		cmd_quit },
-	{ "dth",	cmd_dth},
 	{ "exit",	cmd_quit },
 	{ "halt",	cmd_quit },
 

@@ -105,6 +105,9 @@ struct thread {
 	 * Public fields
 	 */
 
+#if OPT_A2
+	t_pid thread_pid;
+#endif
 	/* add more here as needed */
 };
 

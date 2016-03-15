@@ -50,6 +50,7 @@
 #include <vfs.h>
 #include <synch.h>
 #include <kern/fcntl.h>  
+#include "opt-A2.h"
 
 /*
  * The process for the kernel; this holds all the kernel-only threads.
@@ -70,6 +71,23 @@ struct semaphore *no_proc_sem;
 #endif  // UW
 
 
+#if OPT_A2
+
+int index = 0;
+struct proc* pids[PSIZE];
+
+/*
+ * obviously not caring about overwriting in the table
+ */
+int addProc(struct proc* proc)
+{
+	if (index == PSIZE)
+		index = 0;
+	pids[index] = proc;
+	return index++;
+}
+
+#endif
 
 /*
  * Create a proc structure.
@@ -93,6 +111,12 @@ proc_create(const char *name)
 	threadarray_init(&proc->p_threads);
 	spinlock_init(&proc->p_lock);
 
+	// added by jon-bassi
+#if OPT_A2
+	proc->sem_running = sem_create("sem_running", 1);
+	proc->sem_waiting = sem_create("sem_waiting processes", 0);
+#endif
+
 	/* VM fields */
 	proc->p_addrspace = NULL;
 
@@ -102,6 +126,9 @@ proc_create(const char *name)
 #ifdef UW
 	proc->console = NULL;
 #endif // UW
+#if OPT_A2
+	proc->pid = addProc(proc);
+#endif
 
 	return proc;
 }
@@ -123,6 +150,11 @@ proc_destroy(struct proc *proc)
 
 	KASSERT(proc != NULL);
 	KASSERT(proc != kproc);
+
+#if OPT_A2
+	sem_destroy(proc->sem_running);
+	sem_destroy(proc->sem_waiting);
+#endif
 
 	/*
 	 * We don't take p_lock in here because we must have the only
@@ -364,3 +396,4 @@ curproc_setas(struct addrspace *newas)
 	spinlock_release(&proc->p_lock);
 	return oldas;
 }
+

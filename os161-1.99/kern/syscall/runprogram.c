@@ -44,6 +44,8 @@
 #include <vfs.h>
 #include <syscall.h>
 #include <test.h>
+#include <copyinout.h>
+#include <opt-A2.h>
 
 /*
  * Load program "progname" and start running it in usermode.
@@ -51,9 +53,14 @@
  *
  * Calls vfs_open on progname and thus may destroy it.
  */
-int
-runprogram(char *progname)
+
+#if OPT_A2
+int runprogram(char *progname, char **args)
 {
+#else
+int runprogram(char *progname)
+{
+#endif
 	struct addrspace *as;
 	struct vnode *v;
 	vaddr_t entrypoint, stackptr;
@@ -97,12 +104,81 @@ runprogram(char *progname)
 		return result;
 	}
 
-	/* Warp to user mode. */
-	enter_new_process(0 /*argc*/, NULL /*userspace addr of argv*/,
-			  stackptr, entrypoint);
+#if OPT_A2
+ 	/* keep track of how many arguments there are */
+	int argc = 0;
+
+	int i, j;
+	int length;
+	int actual_length;
+	char *arg_buffer;
+
+
+	// /* used for traversing through arguemnts */
+	char **args_counter = args;
 	
+	while (*args_counter != NULL)
+	{
+		argc++;
+		args_counter++;
+	}
+
+	// keeps track of stack pointers at begnning of each string argument
+	char *arg_pointers[argc];
+
+
+	// adding in strings backwards
+	for (i = argc - 1; i >=0; i--)
+	{
+		length = strlen(args[i]);
+		length ++; 	// accounts for \0 terminator
+		actual_length = length;
+
+		if (length % 4  != 0)
+		{
+			length += (4 - (length % 4));
+		}
+
+		// not including \0 terminator
+		arg_buffer = kmalloc(sizeof(char) * (length - 1)); 
+
+		for (j = 0; j < length; j++)
+		{
+			if(j >= actual_length)
+				arg_buffer[j] = '\0';
+			else
+				arg_buffer[j] = args[i][j];
+
+		}
+
+		// moving the stack pointer
+		stackptr -= length;
+
+		// finally, let's copy out to the stack
+		copyout((const void*)arg_buffer, (userptr_t)stackptr, (size_t)length);
+
+		// keeps track of stack pointers at begnning of each string argument
+		arg_pointers[i] = (char*)stackptr;
+
+		// deallocate space
+		kfree(arg_buffer);
+
+	}
+
+	for (i = argc - 1; i >=0; i--)
+	{
+		//  move the stack pointer down 4 bytes for the character pointer
+		stackptr -= 4;
+		copyout((const void*)(arg_pointers + i), (userptr_t)stackptr, 4);
+	}
+
+	enter_new_process(argc, (userptr_t)stackptr, stackptr, entrypoint);
+	
+#else
+	/* Warp to user mode. */
+	enter_new_process(0 /*argc*/, NULL /*userspace addr of argv*/, stackptr, entrypoint);
+#endif
 	/* enter_new_process does not return. */
 	panic("enter_new_process returned\n");
 	return EINVAL;
 }
-
