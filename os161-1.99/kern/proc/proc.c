@@ -79,11 +79,11 @@ struct proc* pids[PSIZE];
 /*
  * obviously not caring about overwriting in the table
  */
-int addProc(struct proc* process)
+int addProc(struct proc* proc)
 {
 	if (index == PSIZE)
 		index = 0;
-	pids[index] = process;
+	pids[index] = proc;
 	return index++;
 }
 
@@ -127,7 +127,7 @@ proc_create(const char *name)
 	proc->console = NULL;
 #endif // UW
 #if OPT_A2
-	proc->pid = addProc(&proc);
+	proc->pid = addProc(proc);
 #endif
 
 	return proc;
@@ -152,8 +152,8 @@ proc_destroy(struct proc *proc)
 	KASSERT(proc != kproc);
 
 #if OPT_A2
-	sem_destroy(&proc->sem_running);
-	sem_destroy(&proc->sem_waiting);
+	sem_destroy(proc->sem_running);
+	sem_destroy(proc->sem_waiting);
 #endif
 
 	/*
@@ -396,3 +396,4 @@ curproc_setas(struct addrspace *newas)
 	spinlock_release(&proc->p_lock);
 	return oldas;
 }
+

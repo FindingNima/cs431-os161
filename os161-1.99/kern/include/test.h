@@ -27,50 +27,71 @@
  * SUCH DAMAGE.
  */
 #include <opt-A2.h>
-#ifndef _SYSCALL_H_
-#define _SYSCALL_H_
-
-
-struct trapframe; /* from <machine/trapframe.h> */
+#ifndef _TEST_H_
+#define _TEST_H_
 
 /*
- * The system call dispatcher.
+ * Declarations for test code and other miscellaneous high-level
+ * functions.
  */
 
-void syscall(struct trapframe *tf);
 
-/*
- * Support functions.
- */
-
-/* Helper for fork(). You write this. */
-void enter_forked_process(struct trapframe *tf);
-
-/* Enter user mode. Does not return. */
-void enter_new_process(int argc, userptr_t argv, vaddr_t stackptr,
-		       vaddr_t entrypoint);
-
-
-/*
- * Prototypes for IN-KERNEL entry points for system call implementations.
- */
-
-int sys_reboot(int code);
-int sys___time(userptr_t user_seconds, userptr_t user_nanoseconds);
-
-#if OPT_A2
-int sys_open(const char *filename, int flags);
-//int sys_open(const char *filename, int flags, int mode);
-int sys_close(int fd);
-int sys_read(int fdesc,userptr_t ubuf,unsigned int nbytes,int *retval);
-#endif
+/* This is only actually available if OPT_SYNCHPROBS is set. */
+int whalemating(int, char **);
 
 #ifdef UW
-int sys_write(int fdesc,userptr_t ubuf,unsigned int nbytes,int *retval);
-void sys__exit(int exitcode);
-int sys_getpid(pid_t *retval);
-int sys_waitpid(pid_t pid, userptr_t status, int options, pid_t *retval);
+int catmouse(int, char **);
+#endif
 
-#endif // UW
+/*
+ * Test code.
+ */
 
-#endif /* _SYSCALL_H_ */
+/* lib tests */
+int arraytest(int, char **);
+int bitmaptest(int, char **);
+int queuetest(int, char **);
+
+/* thread tests */
+int threadtest(int, char **);
+int threadtest2(int, char **);
+int threadtest3(int, char **);
+int semtest(int, char **);
+int locktest(int, char **);
+int cvtest(int, char **);
+
+#ifdef UW
+/* Another thread and synchronization test */
+int uwlocktest1(int, char **);
+/* Used to test uw-vmstats */
+int uwvmstatstest(int, char **);
+#endif
+
+/* filesystem tests */
+int fstest(int, char **);
+int readstress(int, char **);
+int writestress(int, char **);
+int writestress2(int, char **);
+int createstress(int, char **);
+int printfile(int, char **);
+
+/* other tests */
+int malloctest(int, char **);
+int mallocstress(int, char **);
+int nettest(int, char **);
+
+#if OPT_A2
+/* Routine for running a user-level program. */
+int runprogram(char *progname, char **args);
+#else
+int runprogram(char *progname);
+#endif
+
+/* Kernel menu system. */
+void menu(char *argstr);
+
+/* The main function, called from start.S. */
+void kmain(char *bootstring);
+
+
+#endif /* _TEST_H_ */

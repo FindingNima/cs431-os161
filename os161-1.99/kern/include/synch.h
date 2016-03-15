@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2000, 2001, 2002, 2003, 2004, 2005, 2008, 2009
- *  The President and Fellows of Harvard College.
+ *      The President and Fellows of Harvard College.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -127,6 +127,9 @@ void lock_destroy(struct lock *);
 
 struct cv {
     char *cv_name;
+    struct wchan *cv_wchan;
+    struct spinlock cv_spinlock;
+    struct lock* cv_lock;
     // add what you need here
     // (don't forget to mark things volatile as needed)
 };

@@ -84,9 +84,9 @@ sys_getpid(pid_t *retval)
 
 int
 sys_waitpid(pid_t pid,
-	    userptr_t status,
-	    int options,
-	    pid_t *retval)
+      userptr_t status,
+      int options,
+      pid_t *retval)
 {
   int exitstatus;
   int result;
@@ -96,7 +96,6 @@ sys_waitpid(pid_t pid,
      the specified process.   
      In fact, this will return 0 even if the specified process
      is still running, and even if it never existed in the first place.
-
      Fix this!
   */
 
@@ -110,6 +109,8 @@ sys_waitpid(pid_t pid,
   P(&reference_proc->sem_running);
 
   exitstatus = reference_proc->exitcode;
+  V(&reference_proc->sem_running);
+  P(&reference_proc->sem_waiting);
   result = copyout((void *)&exitstatus,status,sizeof(int));
   if (result) {
     return(result);

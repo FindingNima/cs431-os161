@@ -86,6 +86,10 @@ struct proc {
     /* add more material here as needed */
 };
 
+#if OPT_A2
+int addProc(struct proc *proc);
+#endif
+
 /* This is the process structure for the kernel and for kernel-only threads. */
 extern struct proc *kproc;
 
