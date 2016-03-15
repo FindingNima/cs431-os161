@@ -45,6 +45,7 @@
 #include "opt-synchprobs.h"
 #include "opt-sfs.h"
 #include "opt-net.h"
+#include <opt-A2.h>
 
 /*
  * In-kernel menu and command dispatcher.
@@ -53,7 +54,6 @@
 #define _PATH_SHELL "/bin/sh"
 
 #define MAXMENUARGS  16
-
 
 // XXX this should not be in this file
 void
@@ -103,7 +103,12 @@ cmd_progthread(void *ptr, unsigned long nargs)
 
 	strcpy(progname, args[0]);
 
+#if OPT_A2
+	result = runprogram(progname, args);
+#else
 	result = runprogram(progname);
+#endif
+
 	if (result) {
 		kprintf("Running program %s failed: %s\n", args[0],
 			strerror(result));
@@ -182,17 +187,6 @@ cmd_prog(int nargs, char **args)
 }
 
 /*
-* Command for setting debug
-*/
-static int set_debug(int nargs, char **args)
-{
-	(void) nargs;
-	(void) args;
-	dbflags = 0xFFFF;
-	kprintf("Debug Mode Set\n");
-	return 0;	
-}
-/*
  * Command for starting the system shell.
  */
 static
@@ -232,6 +226,8 @@ static
 int
 cmd_pwd(int nargs, char **args)
 {
+	
+	DEBUG(DB_EXEC, " THIS SHOULD FREAKING WORK");
 	char buf[PATH_MAX+1];
 	int result;
 	struct iovec iov;
@@ -545,10 +541,7 @@ static struct {
 	{ "help",	cmd_mainmenu },
 	{ "?o",		cmd_opsmenu },
 	{ "?t",		cmd_testmenu },
-	
-	/* Debug */
-	{"dth",		set_debug },
-	
+
 	/* operations */
 	{ "s",		cmd_shell },
 	{ "p",		cmd_prog },

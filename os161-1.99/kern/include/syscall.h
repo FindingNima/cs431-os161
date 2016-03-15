@@ -26,7 +26,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
+#include <opt-A2.h>
 #ifndef _SYSCALL_H_
 #define _SYSCALL_H_
 
@@ -57,6 +57,13 @@ void enter_new_process(int argc, userptr_t argv, vaddr_t stackptr,
 
 int sys_reboot(int code);
 int sys___time(userptr_t user_seconds, userptr_t user_nanoseconds);
+
+#if OPT_A2
+int sys_open(const char *filename, int flags);
+int sys_open(const char *filename, int flags, int mode);
+int sys_close(int fd);
+int sys_read(int fdesc,userptr_t ubuf,unsigned int nbytes,int *retval);
+#endif
 
 #ifdef UW
 int sys_write(int fdesc,userptr_t ubuf,unsigned int nbytes,int *retval);

@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2000, 2001, 2002, 2003, 2004, 2005, 2008, 2009
- *	The President and Fellows of Harvard College.
+ *  The President and Fellows of Harvard College.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -39,7 +39,7 @@
 #include <thread.h>
 #include <current.h>
 #include <synch.h>
-#include <opt-A1.h>
+#include <opt-A2.h>
 
 ////////////////////////////////////////////////////////////
 //
@@ -147,7 +147,7 @@ V(struct semaphore *sem) {
 struct lock *
 lock_create(const char *name) {
     // add stuff here as needed
-#if OPT_A1
+#if OPT_A2
     struct lock *lock;
 
     int initial_count = 1;
@@ -194,7 +194,7 @@ lock_create(const char *name) {
 
 void
 lock_destroy(struct lock *lock) {
-#if OPT_A1
+#if OPT_A2
     KASSERT(lock != NULL);
 
     /* wchan_cleanup will assert if anyone's waiting on it */
@@ -216,7 +216,7 @@ lock_destroy(struct lock *lock) {
 void
 lock_acquire(struct lock *lock) {
     // Write this
-#if OPT_A1
+#if OPT_A2
     KASSERT(lock != NULL);
 
     /*
@@ -249,7 +249,7 @@ lock_acquire(struct lock *lock) {
 void
 lock_release(struct lock *lock) {
     // Write this
-#if OPT_A1
+#if OPT_A2
     KASSERT(lock != NULL);
     KASSERT(lock->lk_curthread == curthread);
 
@@ -257,7 +257,7 @@ lock_release(struct lock *lock) {
         lock->lk_value = 1;
         KASSERT(lock->lk_value == 1);
         wchan_wakeone(lock->lk_wchan);
-        lk_curthread = NULL;
+        lock->lk_curthread = NULL;
     spinlock_release(&lock->lk_lock);
 #else
 
@@ -267,7 +267,7 @@ lock_release(struct lock *lock) {
 bool
 lock_do_i_hold(struct lock *lock) {
     // Write this
-#if OPT_A1
+#if OPT_A2
     KASSERT(lock != NULL);
     bool return_value;
     spinlock_acquire(&lock->lk_lock);
@@ -290,6 +290,33 @@ lock_do_i_hold(struct lock *lock) {
 
 struct cv *
 cv_create(const char *name) {
+#if OPT_A2
+    struct cv *cv;
+
+    cv = kmalloc(sizeof(struct cv));
+    if (cv == NULL) {
+        return NULL;
+    }
+
+    cv->cv_name = kstrdup(name);
+    if (cv->cv_name == NULL) {
+        kfree(cv);
+        return NULL;
+    }
+
+    cv->cv_wchan = wchan_create(cv->cv_name);
+    if (cv->cv_wchan == NULL) {
+        kfree(cv->cv_name);
+        kfree(cv);
+        return NULL;
+    }
+
+    spinlock_init(&cv->cv_spinlock);
+    // add stuff here as needed
+
+    return cv;
+
+#else
     struct cv *cv;
 
     cv = kmalloc(sizeof(struct cv));
@@ -306,36 +333,84 @@ cv_create(const char *name) {
     // add stuff here as needed
 
     return cv;
+#endif
 }
 
 void
 cv_destroy(struct cv *cv) {
+#if OPT_A2
+    KASSERT(cv != NULL);
+
+    /* wchan_cleanup will assert if anyone's waiting on it */
+    spinlock_cleanup(&cv->cv_spinlock);
+    wchan_destroy(cv->cv_wchan);
+    kfree(cv->cv_name);
+    kfree(cv);
+#else
     KASSERT(cv != NULL);
 
     // add stuff here as needed
 
     kfree(cv->cv_name);
     kfree(cv);
+#endif
 }
 
 void
 cv_wait(struct cv *cv, struct lock *lock) {
+#if OPT_A2
+    spinlock_acquire(&cv->cv_spinlock);
+
+    //set our member variable
+    cv->cv_lock = lock;
+
+    //release the lock so that you can go to sleep
+    KASSERT(lock_do_i_hold(cv->cv_lock));
+    lock_release(cv->cv_lock);
+
+    //go to sleep
+    wchan_lock(cv->cv_wchan);
+    spinlock_release(&cv->cv_spinlock);
+    wchan_sleep(cv->cv_wchan);
+
+
+    //upon waking, reacquire the lock
+    lock_acquire(cv->cv_lock);
+
+#else
     // Write this
     (void) cv;    // suppress warning until code gets written
     (void) lock;  // suppress warning until code gets written
+#endif
 }
 
 void
 cv_signal(struct cv *cv, struct lock *lock) {
+#if OPT_A2
+
+    spinlock_acquire(&cv->cv_spinlock);
+    if (lock == cv->cv_lock) {
+        wchan_wakeone(cv->cv_wchan);
+    }
+    spinlock_release(&cv->cv_spinlock);
+#else
     // Write this
     (void) cv;    // suppress warning until code gets written
     (void) lock;  // suppress warning until code gets written
+#endif
 }
 
 void
 cv_broadcast(struct cv *cv, struct lock *lock) {
+#if OPT_A2
+    spinlock_acquire(&cv->cv_spinlock);
+    if (lock == cv->cv_lock) {
+        wchan_wakeall(cv->cv_wchan);
+    }
+    spinlock_release(&cv->cv_spinlock);
+#else
     // Write this
     (void) cv;    // suppress warning until code gets written
     (void) lock;  // suppress warning until code gets written
+#endif
 }
-
