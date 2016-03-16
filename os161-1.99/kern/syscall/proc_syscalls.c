@@ -6,6 +6,7 @@
 #include <syscall.h>
 #include <current.h>
 #include <proc.h>
+#include <synch.h>
 #include <thread.h>
 #include <addrspace.h>
 #include <copyinout.h>
@@ -23,14 +24,15 @@ void sys__exit(int exitcode) {
 #if OPT_A2
   // set the exit code of the proc
   curproc->p_exitcode = exitcode;
+  exit_codes[curproc->pid] = exitcode;
   // increment the binary semaphore for the process
-  V(&curproc->sem_running);
+  V(curproc->sem_running);
   // should now wait till all processes that are waitpid are notified
-  while(curproc->sem_waiting->sem_count != 0)
+  while((int)curproc->sem_waiting->sem_count != 0)
   {
     // wait
   }
-
+  pids[curproc->pid] = NULL;
 #else
   (void) exitcode
 #endif
@@ -73,6 +75,7 @@ sys_getpid(pid_t *retval)
   /* for now, this is just a stub that always returns a PID of 1 */
   /* you need to fix this to make it work properly */
 #if OPT_A2
+  (void) retval;
   return curproc->pid;
 #else
   (void) retval;
@@ -90,7 +93,7 @@ sys_waitpid(pid_t pid,
 {
   int exitstatus;
   int result;
-
+  (void) retval;
   /* this is just a stub implementation that always reports an
      exit status of 0, regardless of the actual exit status of
      the specified process.   
@@ -103,14 +106,19 @@ sys_waitpid(pid_t pid,
     return(EINVAL);
   }
 #if OPT_A2
+  if (pids[pid] == NULL)
+  {
+    exitstatus = exit_codes[pid];
+    return exitstatus;
+  }
   struct proc* reference_proc = pids[pid];
-  // you should get the referenced process from th pid by making a table each time a proc is created
-  V(&reference_proc-sem_waiting);
-  P(&reference_proc->sem_running);
+  // you should get the referenced process from the pid by making a table each time a proc is created
+  V(reference_proc->sem_waiting);
+  P(reference_proc->sem_running);
 
-  exitstatus = reference_proc->exitcode;
-  V(&reference_proc->sem_running);
-  P(&reference_proc->sem_waiting);
+  exitstatus = reference_proc->p_exitcode;
+  V(reference_proc->sem_running);
+  P(reference_proc->sem_waiting);
   result = copyout((void *)&exitstatus,status,sizeof(int));
   if (result) {
     return(result);
@@ -130,20 +138,23 @@ sys_waitpid(pid_t pid,
 }
 
 #if OPT_A2
-pid_t fork(){
+pid_t fork()
+{
  struct addrspace *as;
  vaddr_t stackptr;
  int result;
  struct proc *child;
-
+  
+  (void) stackptr;
+  (void) result;
  //Create a new process
- child = proc_create(curproc->p_name);
+ child = proc_create_runprogram(curproc->p_name);
  
  
  /* Create a new address space. */
  as = as_create();
  if (as ==NULL) {
-   vfs_close(v);
+   //vfs_close(v);
    return ENOMEM;
  }
  //Set address space of new process

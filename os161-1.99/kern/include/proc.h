@@ -47,6 +47,8 @@ struct semaphore;
 
 #if OPT_A2
 #define PSIZE 1000
+struct proc* pids[PSIZE];
+int exit_codes[PSIZE];
 #endif
 
 /*
