@@ -63,6 +63,7 @@ int sys_open(const char *filename, int flags);
 //int sys_open(const char *filename, int flags, int mode);
 int sys_close(int fd);
 int sys_read(int fdesc,userptr_t ubuf,unsigned int nbytes,int *retval);
+pid_t fork(void);
 #endif
 
 #ifdef UW

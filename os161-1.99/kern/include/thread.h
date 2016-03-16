@@ -39,6 +39,7 @@
 #include <array.h>
 #include <spinlock.h>
 #include <threadlist.h>
+#include "opt-A2.h"
 
 struct cpu;
 
@@ -105,9 +106,9 @@ struct thread {
 	 * Public fields
 	 */
 
-#if OPT_A2
-	t_pid thread_pid;
-#endif
+// #if OPT_A2
+// 	t_pid thread_pid;
+// #endif
 	/* add more here as needed */
 };
 

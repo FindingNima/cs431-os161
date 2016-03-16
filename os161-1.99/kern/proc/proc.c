@@ -74,7 +74,6 @@ struct semaphore *no_proc_sem;
 #if OPT_A2
 
 int index = 0;
-struct proc* pids[PSIZE];
 
 /*
  * obviously not caring about overwriting in the table
