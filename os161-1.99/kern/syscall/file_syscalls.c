@@ -87,13 +87,15 @@ sys_write(int fdesc,userptr_t ubuf,unsigned int nbytes,int *retval)
   u.uio_space = curproc->p_addrspace;
 
   //res = VOP_WRITE(curproc->console,&u);
-// #if OPT_A2
-//   vnode_t *vnode = file_desc[fdesc];
-//   sem_wait(&db_list[fdesc]);
-//   res = VOP_WRITE(vnode,&u);
-//   sem_post(&db_list[fdesc]);
-  
-// #endif
+  #if OPT_A2
+    // vnode_t *vnode = file_desc[fdesc];
+    // sem_wait(&db_list[fdesc]);
+    // res = VOP_WRITE(vnode,&u);
+    // sem_post(&db_list[fdesc]);
+    res = VOP_WRITE(curproc->console,&u);
+  #else
+    res = VOP_WRITE(curproc->console,&u);
+  #endif
   if (res) {
     return res;
   }

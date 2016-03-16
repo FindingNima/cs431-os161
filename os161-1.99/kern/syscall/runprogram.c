@@ -106,6 +106,7 @@ int runprogram(char *progname)
 
 #if OPT_A2
  	/* keep track of how many arguments there are */
+ 	//DEBUG(DB_EXEC, "THIS SHOULD PRINT\n");
 	int argc = 0;
 
 	int i, j;
